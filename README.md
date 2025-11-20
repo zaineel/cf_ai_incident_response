@@ -2,6 +2,12 @@
 
 An AI-powered incident response system built on Cloudflare's platform that helps diagnose and resolve system outages in seconds. Inspired by recent Cloudflare outages, this system uses AI to rapidly pinpoint root causes and provide actionable remediation steps.
 
+## 🚀 Live Application
+
+**Try it now:** [https://cf-ai-incident-response.pages.dev](https://cf-ai-incident-response.pages.dev)
+
+**Backend API:** [https://cf-ai-incident-response.zaineel-s-mithani.workers.dev](https://cf-ai-incident-response.zaineel-s-mithani.workers.dev)
+
 ## Features
 
 - **Rapid Diagnosis**: AI analyzes incidents and identifies root causes in seconds using Llama 3.3 70B
@@ -360,13 +366,15 @@ All prompts are documented in [PROMPTS.md](./PROMPTS.md).
 - [x] Real-time audio recording via MediaRecorder API
 - [x] WebSocket-based voice communication
 - [x] Conversation history for voice interactions
+- [x] **Post-incident report generation** - AI-powered comprehensive reports with executive summaries
+- [x] Multiple export formats (Markdown, JSON)
+- [x] One-click report download from dashboard
 
 ## Future Enhancements
 
 - [ ] Text-to-speech for AI responses
 - [ ] Integration with monitoring systems (Prometheus, Grafana, Datadog)
 - [ ] Automated incident creation from monitoring alerts
-- [ ] Post-incident report generation
 - [ ] Team collaboration features
 - [ ] Incident playbook library
 - [ ] Historical incident search and analysis
