@@ -29,6 +29,7 @@ const IncidentDashboard = ({ incidentId }: IncidentDashboardProps) => {
   const [incident, setIncident] = useState<IncidentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   useEffect(() => {
     loadIncident();
@@ -51,6 +52,32 @@ const IncidentDashboard = ({ incidentId }: IncidentDashboardProps) => {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateReport = async (format: 'markdown' | 'json') => {
+    setGeneratingReport(true);
+    try {
+      const response = await fetch(`/api/incident/${incidentId}/report?format=${format}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      // Create a blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `incident-${incidentId}-report.${format === 'json' ? 'json' : 'md'}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate report');
+    } finally {
+      setGeneratingReport(false);
     }
   };
 
@@ -117,6 +144,65 @@ const IncidentDashboard = ({ incidentId }: IncidentDashboardProps) => {
             Duration
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: '600' }}>{durationDisplay}</div>
+        </div>
+      </div>
+
+      {/* Report Generation Section */}
+      <div
+        style={{
+          padding: '1.5rem',
+          backgroundColor: 'var(--surface)',
+          borderRadius: '8px',
+          marginBottom: '2rem',
+          border: '1px solid var(--primary)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>📄 Post-Incident Report</h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+              Generate a comprehensive report with AI-powered executive summary, timeline, and recommendations
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              className="button button-primary"
+              onClick={() => generateReport('markdown')}
+              disabled={generatingReport}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              {generatingReport ? (
+                <>
+                  <span className="loading" style={{ width: '16px', height: '16px' }} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  📝 Markdown Report
+                </>
+              )}
+            </button>
+            <button
+              className="button button-secondary"
+              onClick={() => generateReport('json')}
+              disabled={generatingReport}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              {generatingReport ? (
+                <>
+                  <span className="loading" style={{ width: '16px', height: '16px' }} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  🔗 JSON Export
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <strong>Includes:</strong> Executive summary • Timeline • Root cause analysis • Remediation steps • Conversation history • Recommendations
         </div>
       </div>
 

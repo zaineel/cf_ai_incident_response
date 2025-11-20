@@ -1,6 +1,7 @@
-import { Env } from './types';
+import { Env, Message } from './types';
 import { IncidentConversation } from './incident-conversation';
 import { IncidentResponseWorkflow } from './incident-workflow';
+import { generateIncidentReport, generateJSONReport } from './report-generator';
 
 export { IncidentConversation, IncidentResponseWorkflow };
 
@@ -70,6 +71,17 @@ export default {
           return await handleWebSocket(request, env);
         }
         return new Response('Expected WebSocket connection', { status: 400, headers: corsHeaders });
+      }
+
+      // Route: Generate post-incident report
+      if (url.pathname.startsWith('/api/incident/') && url.pathname.endsWith('/report')) {
+        const parts = url.pathname.split('/');
+        const incidentId = parts[parts.length - 2];
+        if (!incidentId) {
+          return new Response('Incident ID required', { status: 400, headers: corsHeaders });
+        }
+        const format = url.searchParams.get('format') || 'markdown';
+        return await handleGenerateReport(incidentId, format, env, corsHeaders);
       }
 
       // 404 for unknown routes
@@ -217,6 +229,73 @@ async function handleListIncidents(env: Env, corsHeaders: Record<string, string>
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     }
   );
+}
+
+/**
+ * Generate post-incident report
+ */
+async function handleGenerateReport(
+  incidentId: string,
+  format: string,
+  env: Env,
+  corsHeaders: Record<string, string>
+): Promise<Response> {
+  try {
+    // Get incident data from Durable Object
+    const id = env.INCIDENTS.idFromName(incidentId);
+    const stub = env.INCIDENTS.get(id);
+
+    // Get incident state
+    const incidentResponse = await stub.fetch(
+      new Request('https://fake-host/incident-state', {
+        method: 'GET',
+      })
+    );
+    const incidentData = await incidentResponse.json();
+
+    // Get conversation history
+    const historyResponse = await stub.fetch(
+      new Request('https://fake-host/history', {
+        method: 'GET',
+      })
+    );
+    const { history } = await historyResponse.json();
+
+    // Generate report based on format
+    let reportContent: string;
+    let contentType: string;
+    let filename: string;
+
+    if (format === 'json') {
+      reportContent = generateJSONReport(incidentData, history || []);
+      contentType = 'application/json';
+      filename = `incident-${incidentId}-report.json`;
+    } else {
+      // Default to markdown
+      reportContent = await generateIncidentReport(incidentData, history || [], env);
+      contentType = 'text/markdown';
+      filename = `incident-${incidentId}-report.md`;
+    }
+
+    return new Response(reportContent, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to generate report',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
 }
 
 /**
