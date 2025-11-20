@@ -28,13 +28,19 @@ An AI-powered incident response system built on Cloudflare's platform that helps
 
 ```
 ┌─────────────────┐
-│  User Reports   │
-│    Incident     │
+│  User Browser   │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Pages/Workers  │  ◄─── Frontend Interface
+│ Cloudflare Pages│  ◄─── React Frontend + Pages Functions
+│   (Frontend)    │
+└────────┬────────┘
+         │ (Proxy)
+         ▼
+┌─────────────────┐
+│     Worker      │  ◄─── Main Backend API
+│   (cf-ai-*)     │
 └────────┬────────┘
          │
          ├──────────────────┐
