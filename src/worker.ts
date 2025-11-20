@@ -232,18 +232,104 @@ async function handleWebSocket(request: Request, env: Env): Promise<Response> {
   // Handle messages
   server.addEventListener('message', async (event: MessageEvent) => {
     try {
+      // Handle binary audio data
+      if (event.data instanceof ArrayBuffer) {
+        server.send(
+          JSON.stringify({
+            type: 'processing',
+            message: 'Processing audio...',
+          })
+        );
+
+        // Convert ArrayBuffer to Uint8Array for Whisper
+        const audioData = new Uint8Array(event.data);
+
+        try {
+          // Run Whisper model for speech-to-text
+          const transcription = await env.AI.run('@cf/openai/whisper', {
+            audio: Array.from(audioData),
+          }) as { text: string };
+
+          // Send transcription back
+          server.send(
+            JSON.stringify({
+              type: 'transcription',
+              text: transcription.text,
+            })
+          );
+
+          // Note: The incidentId needs to be sent separately or maintained in session
+          // For now, we'll just send the transcription
+        } catch (whisperError) {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              message: `Transcription failed: ${whisperError instanceof Error ? whisperError.message : 'Unknown error'}`,
+            })
+          );
+        }
+
+        return;
+      }
+
+      // Handle JSON messages
       const data = JSON.parse(event.data as string);
 
       if (data.type === 'voice') {
-        // Voice data would be base64 encoded audio
-        // In production, you'd use Whisper model: @cf/openai/whisper
-        // For now, we'll send back a placeholder
+        // Voice data as base64 encoded audio
         server.send(
           JSON.stringify({
-            type: 'transcription',
-            text: 'Voice processing not yet implemented',
+            type: 'processing',
+            message: 'Processing audio...',
           })
         );
+
+        try {
+          // Decode base64 audio
+          const audioBase64 = data.audio;
+          const audioBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+
+          // Run Whisper model for speech-to-text
+          const transcription = await env.AI.run('@cf/openai/whisper', {
+            audio: Array.from(audioBuffer),
+          }) as { text: string };
+
+          server.send(
+            JSON.stringify({
+              type: 'transcription',
+              text: transcription.text,
+            })
+          );
+
+          // If incidentId is provided, send to AI for processing
+          if (data.incidentId && transcription.text) {
+            const id = env.INCIDENTS.idFromName(data.incidentId);
+            const stub = env.INCIDENTS.get(id);
+
+            const doRequest = new Request('https://fake-host/message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: transcription.text }),
+            });
+
+            const response = await stub.fetch(doRequest);
+            const responseData = await response.json();
+
+            server.send(
+              JSON.stringify({
+                type: 'response',
+                data: responseData,
+              })
+            );
+          }
+        } catch (whisperError) {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              message: `Voice processing failed: ${whisperError instanceof Error ? whisperError.message : 'Unknown error'}`,
+            })
+          );
+        }
       } else if (data.type === 'text') {
         // Handle text messages through WebSocket
         const { message, incidentId } = data;
