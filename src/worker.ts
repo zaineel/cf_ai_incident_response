@@ -366,33 +366,55 @@ async function handleWebSocket(request: Request, env: Env): Promise<Response> {
         try {
           // Decode base64 audio
           const audioBase64 = data.audio;
-          const audioBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+          console.log('Received audio data, length:', audioBase64.length);
+
+          // Decode from base64
+          const binaryString = atob(audioBase64);
+          const audioBuffer = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            audioBuffer[i] = binaryString.charCodeAt(i);
+          }
+
+          console.log('Decoded audio buffer size:', audioBuffer.length);
 
           // Run Whisper model for speech-to-text
+          console.log('Calling Whisper model with audio size:', audioBuffer.length);
+
+          // Whisper expects the audio as an Array (not Uint8Array)
           const transcription = await env.AI.run('@cf/openai/whisper', {
             audio: Array.from(audioBuffer),
-          }) as { text: string };
+          }) as any;
+
+          console.log('Whisper raw response:', JSON.stringify(transcription));
+
+          // Extract text from response (format may vary)
+          const transcribedText = transcription.text || transcription.transcription || JSON.stringify(transcription);
+          console.log('Extracted text:', transcribedText);
 
           server.send(
             JSON.stringify({
               type: 'transcription',
-              text: transcription.text,
+              text: transcribedText,
             })
           );
 
           // If incidentId is provided, send to AI for processing
-          if (data.incidentId && transcription.text) {
+          if (data.incidentId && transcribedText && transcribedText.trim()) {
+            console.log('Processing with AI for incident:', data.incidentId);
+
             const id = env.INCIDENTS.idFromName(data.incidentId);
             const stub = env.INCIDENTS.get(id);
 
             const doRequest = new Request('https://fake-host/message', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: transcription.text }),
+              body: JSON.stringify({ message: transcribedText }),
             });
 
-            const response = await stub.fetch(doRequest);
-            const responseData = await response.json();
+            const aiResponse = await stub.fetch(doRequest);
+            const responseData = await aiResponse.json();
+
+            console.log('AI response received');
 
             server.send(
               JSON.stringify({
@@ -400,8 +422,11 @@ async function handleWebSocket(request: Request, env: Env): Promise<Response> {
                 data: responseData,
               })
             );
+          } else {
+            console.log('No incidentId provided or empty transcription');
           }
         } catch (whisperError) {
+          console.error('Voice processing error:', whisperError);
           server.send(
             JSON.stringify({
               type: 'error',

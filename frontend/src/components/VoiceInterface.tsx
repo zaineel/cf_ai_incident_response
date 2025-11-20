@@ -17,15 +17,15 @@ const VoiceInterface = ({ incidentId }: VoiceInterfaceProps) => {
 
   useEffect(() => {
     return () => {
-      // Cleanup on unmount
-      if (mediaRecorderRef.current && isRecording) {
+      // Cleanup on unmount only
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
       }
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, [isRecording]);
+  }, []); // Empty dependency array - cleanup only on unmount
 
   const connect = () => {
     const wsUrl = window.location.hostname === 'localhost'
@@ -109,13 +109,17 @@ const VoiceInterface = ({ incidentId }: VoiceInterfaceProps) => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        console.log('Recording stopped, blob size:', audioBlob.size, 'type:', audioBlob.type);
 
         // Convert to base64 for sending
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64Audio = (reader.result as string).split(',')[1];
+          console.log('Base64 audio length:', base64Audio.length);
+          console.log('WebSocket state:', wsRef.current?.readyState, 'OPEN:', WebSocket.OPEN);
 
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            console.log('Sending voice message with incidentId:', incidentId);
             wsRef.current.send(
               JSON.stringify({
                 type: 'voice',
@@ -123,6 +127,9 @@ const VoiceInterface = ({ incidentId }: VoiceInterfaceProps) => {
                 incidentId: incidentId,
               })
             );
+            console.log('Voice message sent!');
+          } else {
+            console.error('WebSocket not open! State:', wsRef.current?.readyState);
           }
         };
         reader.readAsDataURL(audioBlob);
