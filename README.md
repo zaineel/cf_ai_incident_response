@@ -11,16 +11,20 @@ An AI-powered incident response system built on Cloudflare's platform that helps
 ## Screenshots
 
 ### New Incident Form
-![New Incident Form](Screenshot%202025-11-20%20at%201.27.33%20PM.png)
+
+![New Incident Form](./new_incident.png)
 
 ### Chat Interface
-![Chat Interface](Screenshot%202025-11-20%20at%201.28.01%20PM.png)
+
+![Chat Interface](./chat_interface.png)
 
 ### Voice Interface
-![Voice Interface](Screenshot%202025-11-20%20at%201.29.20%20PM.png)
+
+![Voice Interface](./voice_interface.png)
 
 ### Incident Dashboard
-![Incident Dashboard](Screenshot%202025-11-20%20at%201.29.29%20PM.png)
+
+![Incident Dashboard](./dashboard.png)
 
 ## Features
 
@@ -35,14 +39,14 @@ An AI-powered incident response system built on Cloudflare's platform that helps
 
 ### Tech Stack
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **LLM** | Llama 3.3 70B (Workers AI) | Natural language understanding and generation |
-| **Orchestration** | Cloudflare Workflows | Multi-step automated incident analysis |
-| **State Management** | Durable Objects | Persistent conversation history and incident state |
-| **API Layer** | Cloudflare Workers | Backend routing and business logic |
-| **Frontend** | Cloudflare Pages (React) | User interface |
-| **Real-time** | WebSockets | Voice interface communication |
+| Component            | Technology                 | Purpose                                            |
+| -------------------- | -------------------------- | -------------------------------------------------- |
+| **LLM**              | Llama 3.3 70B (Workers AI) | Natural language understanding and generation      |
+| **Orchestration**    | Cloudflare Workflows       | Multi-step automated incident analysis             |
+| **State Management** | Durable Objects            | Persistent conversation history and incident state |
+| **API Layer**        | Cloudflare Workers         | Backend routing and business logic                 |
+| **Frontend**         | Cloudflare Pages (React)   | User interface                                     |
+| **Real-time**        | WebSockets                 | Voice interface communication                      |
 
 ### System Flow
 
@@ -123,16 +127,20 @@ Update `wrangler.toml` with your account details if needed. The default configur
 ### Option 1: Run Backend and Frontend Separately (Recommended for Development)
 
 **Terminal 1 - Backend:**
+
 ```bash
 npm run dev
 ```
+
 This starts the Workers development server on `http://localhost:8787`
 
 **Terminal 2 - Frontend:**
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 This starts the Vite development server on `http://localhost:5173`
 
 Visit `http://localhost:5173` to use the application.
@@ -198,6 +206,7 @@ Once an incident is created:
 4. Full conversation history is maintained
 
 **Quick Prompts:**
+
 - What is the root cause of this incident?
 - What are the immediate remediation steps?
 - What systems are affected?
@@ -291,6 +300,7 @@ cf_ai_incident_response/
 Create a new incident.
 
 **Request:**
+
 ```json
 {
   "title": "API Gateway Timeout",
@@ -302,6 +312,7 @@ Create a new incident.
 ```
 
 **Response:**
+
 ```json
 {
   "incidentId": "INC-1234567890-abc123",
@@ -315,6 +326,7 @@ Create a new incident.
 Get incident details by ID.
 
 **Response:**
+
 ```json
 {
   "incidentId": "INC-1234567890-abc123",
@@ -333,6 +345,7 @@ Get incident details by ID.
 Send a chat message for an incident.
 
 **Request:**
+
 ```json
 {
   "message": "What is the root cause?",
@@ -341,6 +354,7 @@ Send a chat message for an incident.
 ```
 
 **Response:**
+
 ```json
 {
   "response": "Based on the logs, the root cause is...",
@@ -354,6 +368,7 @@ Send a chat message for an incident.
 Real-time voice/text communication.
 
 **Message Format:**
+
 ```json
 {
   "type": "text",
@@ -416,6 +431,7 @@ Free tier is sufficient for testing and light usage.
 ### Issue: Worker fails to deploy
 
 **Solution**: Ensure you're authenticated with Wrangler:
+
 ```bash
 wrangler login
 ```
@@ -427,6 +443,7 @@ wrangler login
 ### Issue: Durable Object not found
 
 **Solution**: Make sure migrations have run. Redeploy:
+
 ```bash
 npm run deploy
 ```
