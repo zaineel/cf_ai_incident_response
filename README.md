@@ -8,6 +8,20 @@ An AI-powered incident response system built on Cloudflare's platform that helps
 
 **Backend API:** [https://cf-ai-incident-response.zaineel-s-mithani.workers.dev](https://cf-ai-incident-response.zaineel-s-mithani.workers.dev)
 
+## Screenshots
+
+### New Incident Form
+![New Incident Form](Screenshot%202025-11-20%20at%201.27.33%20PM.png)
+
+### Chat Interface
+![Chat Interface](Screenshot%202025-11-20%20at%201.28.01%20PM.png)
+
+### Voice Interface
+![Voice Interface](Screenshot%202025-11-20%20at%201.29.20%20PM.png)
+
+### Incident Dashboard
+![Incident Dashboard](Screenshot%202025-11-20%20at%201.29.29%20PM.png)
+
 ## Features
 
 - **Rapid Diagnosis**: AI analyzes incidents and identifies root causes in seconds using Llama 3.3 70B
