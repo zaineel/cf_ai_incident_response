@@ -6,7 +6,7 @@ interface VoiceInterfaceProps {
 
 const VoiceInterface = ({ incidentId }: VoiceInterfaceProps) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [isRecording] = useState(false); // setIsRecording will be used when voice recording is implemented
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
   const [status, setStatus] = useState('Not connected');

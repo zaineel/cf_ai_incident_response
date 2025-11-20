@@ -19,10 +19,10 @@ binding = "INCIDENT_WORKFLOW"
 name = "incident-response-workflow"
 class_name = "IncidentResponseWorkflow"
 
-# Migration for Durable Objects
+# Migration for Durable Objects (using SQLite for free plan compatibility)
 [[migrations]]
 tag = "v1"
-new_classes = ["IncidentConversation"]
+new_sqlite_classes = ["IncidentConversation"]
 
 # Environment variables (add your own as needed)
 [vars]
