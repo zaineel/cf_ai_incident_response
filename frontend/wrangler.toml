@@ -1,20 +1,3 @@
 name = "cf-ai-incident-response-frontend"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "dist"
-
-# AI binding for Pages Functions
-[ai]
-binding = "AI"
-
-# Durable Objects binding for Pages Functions
-[[durable_objects.bindings]]
-name = "INCIDENTS"
-class_name = "IncidentConversation"
-script_name = "cf-ai-incident-response"
-
-# Workflows binding for Pages Functions
-[[workflows]]
-binding = "INCIDENT_WORKFLOW"
-name = "incident-response-workflow"
-class_name = "IncidentResponseWorkflow"
-script_name = "cf-ai-incident-response"

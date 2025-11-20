@@ -1,10 +1,9 @@
 // Cloudflare Pages Function to get incident details by ID
+// Proxies to the backend Worker
 
-interface Env {
-  INCIDENTS: DurableObjectNamespace;
-}
+const WORKER_URL = 'https://cf-ai-incident-response.zaineel-s-mithani.workers.dev';
 
-export const onRequestGet: PagesFunction<Env> = async (context) => {
+export const onRequestGet: PagesFunction = async (context) => {
   try {
     const incidentId = context.params.id as string;
 
@@ -13,23 +12,26 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         JSON.stringify({ error: 'Incident ID required' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
         }
       );
     }
 
-    const id = context.env.INCIDENTS.idFromName(incidentId);
-    const stub = context.env.INCIDENTS.get(id);
-
-    const doRequest = new Request('https://fake-host/incident-state', {
+    const response = await fetch(`${WORKER_URL}/api/incident/${incidentId}`, {
       method: 'GET',
     });
 
-    const response = await stub.fetch(doRequest);
     const data = await response.json();
 
     return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
     });
   } catch (error) {
     return new Response(
@@ -39,7 +41,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       }
     );
   }

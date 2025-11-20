@@ -1,44 +1,28 @@
 // Cloudflare Pages Function for chat API
-// This proxies requests to the Workers backend
+// Proxies to the backend Worker
 
-interface Env {
-  INCIDENTS: DurableObjectNamespace;
-  AI: Ai;
-}
+const WORKER_URL = 'https://cf-ai-incident-response.zaineel-s-mithani.workers.dev';
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
+export const onRequestPost: PagesFunction = async (context) => {
   try {
-    const { message, incidentId } = await context.request.json() as {
-      message: string;
-      incidentId: string;
-    };
+    const body = await context.request.json();
 
-    if (!message || !incidentId) {
-      return new Response(
-        JSON.stringify({ error: 'Message and incidentId are required' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Get or create Durable Object for this incident
-    const id = context.env.INCIDENTS.idFromName(incidentId);
-    const stub = context.env.INCIDENTS.get(id);
-
-    // Forward request to Durable Object
-    const doRequest = new Request('https://fake-host/message', {
+    const response = await fetch(`${WORKER_URL}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
     });
 
-    const response = await stub.fetch(doRequest);
     const data = await response.json();
 
     return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
     });
   } catch (error) {
     return new Response(
@@ -48,7 +32,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       }
     );
   }
