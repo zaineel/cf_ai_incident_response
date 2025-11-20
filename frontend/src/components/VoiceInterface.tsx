@@ -315,30 +315,6 @@ const VoiceInterface = ({ incidentId }: VoiceInterfaceProps) => {
         </div>
       </div>
 
-      <div
-        style={{
-          padding: '1.5rem',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          border: '1px solid var(--success)',
-          borderRadius: '8px',
-        }}
-      >
-        <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--success)' }}>
-          ✅ Voice Processing Now Active!
-        </h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-          Full speech-to-text with Whisper is now implemented.
-        </p>
-        <ul style={{ paddingLeft: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-          <li>Click "Connect" to establish WebSocket connection</li>
-          <li>Click "Start Recording" or the microphone icon</li>
-          <li>Speak your message about the incident</li>
-          <li>Click "Stop Recording" when finished</li>
-          <li>Audio is transcribed using Whisper model</li>
-          <li>AI analyzes your question and provides response</li>
-        </ul>
-      </div>
-
       <style>{`
         @keyframes pulse {
           0%, 100% {
