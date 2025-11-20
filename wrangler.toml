@@ -1,0 +1,35 @@
+name = "cf-ai-incident-response"
+main = "src/worker.ts"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+# AI binding for Workers AI
+[ai]
+binding = "AI"
+
+# Durable Objects configuration
+[[durable_objects.bindings]]
+name = "INCIDENTS"
+class_name = "IncidentConversation"
+script_name = "cf-ai-incident-response"
+
+# Workflows configuration
+[[workflows]]
+binding = "INCIDENT_WORKFLOW"
+name = "incident-response-workflow"
+class_name = "IncidentResponseWorkflow"
+
+# Migration for Durable Objects
+[[migrations]]
+tag = "v1"
+new_classes = ["IncidentConversation"]
+
+# Environment variables (add your own as needed)
+[vars]
+ENVIRONMENT = "development"
+
+# Uncomment for production configuration
+# [env.production]
+# name = "cf-ai-incident-response-prod"
+# [env.production.vars]
+# ENVIRONMENT = "production"
